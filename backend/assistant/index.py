@@ -2,7 +2,7 @@ import os
 import json
 import psycopg2
 from groq import Groq
-# redeploy v2
+# redeploy v3
 
 def get_conn():
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
