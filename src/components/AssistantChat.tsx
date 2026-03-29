@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
-
-const ASSISTANT_URL = "https://functions.poehali.dev/d46b436c-9add-4591-bbbc-c4fc89984e09";
+import { parseAndExecute } from "@/lib/commandParser";
 
 interface Message {
   role: "user" | "assistant";
@@ -43,20 +42,14 @@ export default function AssistantChat({ onAction }: { onAction?: () => void }) {
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
     const userMsg: Message = { role: "user", content: text.trim() };
-    const history = messages.slice(1).map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await fetch(ASSISTANT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text.trim(), history }),
-      });
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.reply, actions: data.actions }]);
-      if (data.actions?.length > 0) onAction?.();
+      const result = await parseAndExecute(text.trim());
+      setMessages((prev) => [...prev, { role: "assistant", content: result.reply }]);
+      if (result.action === "refresh") onAction?.();
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Что-то пошло не так. Попробуй ещё раз." }]);
     }
