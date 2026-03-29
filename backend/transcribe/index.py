@@ -2,10 +2,10 @@ import os
 import json
 import base64
 import tempfile
-import openai
+from groq import Groq
 
 def handler(event: dict, context) -> dict:
-    """Транскрибирует аудио через OpenAI Whisper и возвращает текст"""
+    """Транскрибирует аудио через Groq Whisper и возвращает текст"""
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400'}, 'body': ''}
 
@@ -27,7 +27,7 @@ def handler(event: dict, context) -> dict:
     elif 'wav' in mime_type:
         ext = 'wav'
 
-    client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+    client = Groq(api_key=os.environ['GROQ_API_KEY'])
 
     with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as tmp:
         tmp.write(audio_bytes)
@@ -35,8 +35,8 @@ def handler(event: dict, context) -> dict:
 
     with open(tmp_path, 'rb') as f:
         transcript = client.audio.transcriptions.create(
-            model='whisper-1',
-            file=(f'audio.{ext}', f, mime_type),
+            model='whisper-large-v3',
+            file=(f'audio.{ext}', f),
             language='ru'
         )
 
