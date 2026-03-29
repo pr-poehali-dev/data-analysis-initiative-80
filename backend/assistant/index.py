@@ -1,7 +1,7 @@
 import os
 import json
 import psycopg2
-from openai import OpenAI
+from groq import Groq
 
 def get_conn():
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
@@ -20,7 +20,7 @@ SYSTEM_PROMPT = """Ты — личный ИИ-ассистент платфор�
 - add_business_task(category, task_text) — добавить задачу в бизнес (category: "Цех", "Опт. продажи", "Сотрудники", "Проблемы", "Цели", "Что имеем", "Баланс")
 - complete_business_task(category, task_text) — выполнить задачу бизнеса
 
-Когда пользователь говорит что-то вроде "отметь что Кузю покормили" — вызывай feed_pet.
+Когда пользователь говорит "отметь что Кузю покормили" — вызывай feed_pet.
 Когда говорит "купи корм для Умки" — вызывай add_pet_task с type=buy.
 Когда говорит "добавь задачу в цех" — вызывай add_business_task.
 
@@ -32,7 +32,7 @@ TOOLS = [
         "function": {
             "name": "feed_pet",
             "description": "Отметить что питомец покормлен",
-            "parameters": {"type": "object", "properties": {"pet_name": {"type": "string"}}, "required": ["pet_name"]}
+            "parameters": {"type": "object", "properties": {"pet_name": {"type": "string", "description": "Имя питомца"}}, "required": ["pet_name"]}
         }
     },
     {
@@ -70,10 +70,7 @@ TOOLS = [
             "description": "Добавить задачу в раздел бизнеса",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "category": {"type": "string"},
-                    "task_text": {"type": "string"}
-                },
+                "properties": {"category": {"type": "string"}, "task_text": {"type": "string"}},
                 "required": ["category", "task_text"]
             }
         }
@@ -100,7 +97,7 @@ def execute_tool(name: str, args: dict, s: str) -> str:
             from datetime import datetime
             fed_time = datetime.now().strftime("%H:%M")
             cur.execute(f"UPDATE {s}.pets SET fed = true, fed_time = %s WHERE LOWER(name) = LOWER(%s)", (fed_time, args["pet_name"]))
-            return f"Питомец {args['pet_name']} отмечен как накормленный в {fed_time}"
+            return f"Питомец {args['pet_name']} отмечен накормленным в {fed_time}"
 
         if name == "add_pet_task":
             cur.execute(f"SELECT id FROM {s}.pets WHERE LOWER(name) = LOWER(%s)", (args["pet_name"],))
@@ -124,14 +121,13 @@ def execute_tool(name: str, args: dict, s: str) -> str:
             cur.execute(f"UPDATE {s}.business_tasks SET done = true WHERE LOWER(category) = LOWER(%s) AND LOWER(text) LIKE LOWER(%s)",
                         (args["category"], f"%{args['task_text']}%"))
             return f"Задача в {args['category']} выполнена"
-
     finally:
         cur.close()
         conn.close()
     return "Действие выполнено"
 
 def handler(event: dict, context) -> dict:
-    """ИИ-ассистент Life·OS — принимает сообщение, выполняет команды через OpenAI function calling"""
+    """ИИ-ассистент Life·OS на Groq llama3 с function calling"""
     h = {'Access-Control-Allow-Origin': '*'}
 
     if event.get('httpMethod') == 'OPTIONS':
@@ -145,26 +141,32 @@ def handler(event: dict, context) -> dict:
     if not user_message:
         return {'statusCode': 400, 'headers': h, 'body': json.dumps({'error': 'No message'})}
 
-    client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+    client = Groq(api_key=os.environ['GROQ_API_KEY'])
     s = get_schema()
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + history + [{"role": "user", "content": user_message}]
 
-    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=TOOLS, tool_choice="auto")
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=messages,
+        tools=TOOLS,
+        tool_choice="auto"
+    )
     msg = response.choices[0].message
 
     tool_results = []
     if msg.tool_calls:
+        messages.append({"role": "assistant", "content": msg.content or "", "tool_calls": [
+            {"id": tc.id, "type": "function", "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
+            for tc in msg.tool_calls
+        ]})
         for tc in msg.tool_calls:
             args = json.loads(tc.function.arguments)
             result = execute_tool(tc.function.name, args, s)
             tool_results.append({"tool": tc.function.name, "result": result})
+            messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 
-        messages.append(msg)
-        for i, tc in enumerate(msg.tool_calls):
-            messages.append({"role": "tool", "tool_call_id": tc.id, "content": tool_results[i]["result"]})
-
-        final = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
+        final = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=messages)
         reply = final.choices[0].message.content
     else:
         reply = msg.content
