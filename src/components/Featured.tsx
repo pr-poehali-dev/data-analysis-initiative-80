@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import VoiceRecorder from "@/components/VoiceRecorder";
 
 type SubcategorySimple = string;
 type SubcategoryRich = { label: string; icon: string; desc: string };
@@ -148,10 +149,7 @@ export default function Featured() {
           </div>
 
           <div className="mt-8 pt-8 border-t border-neutral-100 flex items-center gap-3">
-            <button className="bg-black text-white px-6 py-2.5 text-sm uppercase tracking-wide hover:bg-neutral-800 transition-colors flex items-center gap-2">
-              <Icon name="Mic" size={16} />
-              Надиктовать запись
-            </button>
+            <VoiceRecorder />
             <button className="border border-neutral-300 text-neutral-700 px-6 py-2.5 text-sm uppercase tracking-wide hover:border-neutral-600 transition-colors flex items-center gap-2">
               <Icon name="Plus" size={16} />
               Добавить подкатегорию
