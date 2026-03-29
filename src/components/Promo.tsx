@@ -1,6 +1,12 @@
 import { useScroll, useTransform, motion } from "framer-motion";
 import { useRef } from "react";
 
+const animals = [
+  { name: "Кузя", type: "Кот", task: "Гадит — разобраться с причиной", attention: 70, emoji: "🐱" },
+  { name: "Умка", type: "Кошка", task: "Записать к ветеринару", attention: 90, emoji: "🐈" },
+  { name: "Шурик", type: "Попугай", task: "Купить подругу", attention: 55, emoji: "🦜" },
+];
+
 export default function Promo() {
   const container = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -19,20 +25,46 @@ export default function Promo() {
         <motion.div style={{ y }} className="relative w-full h-full">
           <img
             src="/images/spiral-circles.jpg"
-            alt="Abstract spiral circles"
+            alt="Абстрактные паттерны"
             className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-black/60" />
         </motion.div>
       </div>
 
-      <h3 className="absolute top-12 right-6 text-white uppercase z-10 text-sm md:text-base lg:text-lg">
-        Анатомия возможностей
-      </h3>
+      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center px-6">
+        <p className="uppercase tracking-widest text-xs text-neutral-400 mb-4">Пример — Семья / Животные</p>
+        <h2 className="text-white text-3xl lg:text-5xl font-bold mb-10 text-center">
+          Индикаторы внимания
+        </h2>
 
-      <p className="absolute bottom-12 right-6 text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-5xl z-10">
-        Каждая секция — рамка для твоей истории. Формируй её, миксуй и позволь контенту
-        литься в неожиданные паттерны, заставляя листать дальше.
-      </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl">
+          {animals.map((animal) => (
+            <div key={animal.name} className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-white">
+              <div className="text-4xl mb-3">{animal.emoji}</div>
+              <div className="font-bold text-lg">{animal.name}</div>
+              <div className="text-neutral-400 text-sm mb-3">{animal.type}</div>
+              <p className="text-sm text-neutral-200 mb-4 leading-relaxed">{animal.task}</p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${animal.attention}%`,
+                      background: animal.attention > 80 ? "#ef4444" : animal.attention > 60 ? "#f59e0b" : "#22c55e",
+                    }}
+                  />
+                </div>
+                <span className="text-xs text-neutral-400">{animal.attention}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <h3 className="absolute top-12 right-6 text-white uppercase z-10 text-sm opacity-50">
+        Ни один питомец не забыт
+      </h3>
     </div>
   );
 }
