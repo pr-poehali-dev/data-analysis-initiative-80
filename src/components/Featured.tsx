@@ -1,13 +1,17 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
+type SubcategorySimple = string;
+type SubcategoryRich = { label: string; icon: string; desc: string };
+type Subcategory = SubcategorySimple | SubcategoryRich;
+
 const categories = [
   {
     id: "family",
     label: "Семья",
     icon: "Heart",
     color: "bg-rose-500",
-    subcategories: ["Моя семья", "Родственники", "Ушедшие", "Животные"],
+    subcategories: ["Моя семья", "Родственники", "Ушедшие", "Животные"] as Subcategory[],
     attention: 82,
     tasks: 3,
   },
@@ -16,7 +20,15 @@ const categories = [
     label: "Бизнес",
     icon: "Briefcase",
     color: "bg-blue-500",
-    subcategories: ["Проекты", "Партнёры", "Финансы", "Идеи"],
+    subcategories: [
+      { label: "Цех", icon: "Factory", desc: "Производство" },
+      { label: "Опт. продажи", icon: "ShoppingCart", desc: "Оптовые клиенты" },
+      { label: "Сотрудники", icon: "Users", desc: "Команда" },
+      { label: "Проблемы", icon: "AlertTriangle", desc: "Текущие проблемы" },
+      { label: "Цели", icon: "Target", desc: "Стратегия" },
+      { label: "Что имеем", icon: "Package", desc: "Активы и ресурсы" },
+      { label: "Баланс", icon: "BarChart2", desc: "Финансы" },
+    ] as Subcategory[],
     attention: 65,
     tasks: 7,
   },
@@ -25,7 +37,7 @@ const categories = [
     label: "Друзья",
     icon: "Users",
     color: "bg-amber-500",
-    subcategories: ["Близкие", "Знакомые", "Нетворкинг", "Встречи"],
+    subcategories: ["Близкие", "Знакомые", "Нетворкинг", "Встречи"] as Subcategory[],
     attention: 40,
     tasks: 2,
   },
@@ -34,7 +46,7 @@ const categories = [
     label: "Хобби",
     icon: "Sparkles",
     color: "bg-emerald-500",
-    subcategories: ["Спорт", "Творчество", "Путешествия", "Саморазвитие"],
+    subcategories: ["Спорт", "Творчество", "Путешествия", "Саморазвитие"] as Subcategory[],
     attention: 55,
     tasks: 4,
   },
@@ -51,9 +63,37 @@ function AttentionBar({ value, color }: { value: number; color: string }) {
   );
 }
 
+function SubcategoryCard({ sub, isBusiness }: { sub: Subcategory; isBusiness: boolean }) {
+  if (isBusiness && typeof sub === "object") {
+    const rich = sub as SubcategoryRich;
+    return (
+      <div className="bg-neutral-50 border border-neutral-100 px-5 py-5 flex flex-col gap-2 group hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
+        <div className="flex items-center justify-between">
+          <div className="w-8 h-8 rounded bg-blue-100 flex items-center justify-center">
+            <Icon name={rich.icon} size={16} className="text-blue-600" />
+          </div>
+          <Icon name="ChevronRight" size={14} className="text-neutral-300 group-hover:text-blue-500 transition-colors" />
+        </div>
+        <div>
+          <div className="font-semibold text-neutral-900 text-sm">{rich.label}</div>
+          <div className="text-xs text-neutral-400 mt-0.5">{rich.desc}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-neutral-50 border border-neutral-100 px-5 py-4 flex items-center justify-between group hover:border-neutral-300 transition-colors cursor-pointer">
+      <span className="text-neutral-800 font-medium">{sub as string}</span>
+      <Icon name="ChevronRight" size={16} className="text-neutral-400 group-hover:text-neutral-700 transition-colors" />
+    </div>
+  );
+}
+
 export default function Featured() {
   const [active, setActive] = useState("family");
   const current = categories.find((c) => c.id === active)!;
+  const isBusiness = active === "business";
 
   return (
     <div id="categories" className="min-h-screen px-6 py-20 bg-white flex flex-col justify-center">
@@ -101,15 +141,9 @@ export default function Featured() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {current.subcategories.map((sub) => (
-              <div
-                key={sub}
-                className="bg-neutral-50 border border-neutral-100 px-5 py-4 flex items-center justify-between group hover:border-neutral-300 transition-colors cursor-pointer"
-              >
-                <span className="text-neutral-800 font-medium">{sub}</span>
-                <Icon name="ChevronRight" size={16} className="text-neutral-400 group-hover:text-neutral-700 transition-colors" />
-              </div>
+          <div className={`grid gap-4 ${isBusiness ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4" : "grid-cols-2 lg:grid-cols-4"}`}>
+            {current.subcategories.map((sub, i) => (
+              <SubcategoryCard key={i} sub={sub} isBusiness={isBusiness} />
             ))}
           </div>
 
