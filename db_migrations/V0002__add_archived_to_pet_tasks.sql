@@ -1,0 +1,1 @@
+ALTER TABLE t_p33712990_data_analysis_initia.pet_tasks ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE;

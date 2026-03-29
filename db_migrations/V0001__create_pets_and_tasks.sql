@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS t_p33712990_data_analysis_initia.pets (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  emoji TEXT NOT NULL DEFAULT '🐾',
+  fed BOOLEAN NOT NULL DEFAULT FALSE,
+  fed_time TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS t_p33712990_data_analysis_initia.pet_tasks (
+  id SERIAL PRIMARY KEY,
+  pet_id INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  done BOOLEAN NOT NULL DEFAULT FALSE,
+  type TEXT NOT NULL DEFAULT 'todo',
+  created_at TIMESTAMP DEFAULT NOW()
+);
