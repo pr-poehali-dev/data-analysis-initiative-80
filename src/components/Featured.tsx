@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import VoiceRecorder from "@/components/VoiceRecorder";
+import PetsManager from "@/components/PetsManager";
 
 type SubcategorySimple = string;
 type SubcategoryRich = { label: string; icon: string; desc: string };
@@ -93,8 +94,10 @@ function SubcategoryCard({ sub, isBusiness }: { sub: Subcategory; isBusiness: bo
 
 export default function Featured() {
   const [active, setActive] = useState("family");
+  const [activeSub, setActiveSub] = useState<string | null>(null);
   const current = categories.find((c) => c.id === active)!;
   const isBusiness = active === "business";
+  const isPets = active === "family" && activeSub === "Животные";
 
   return (
     <div id="categories" className="min-h-screen px-6 py-20 bg-white flex flex-col justify-center">
@@ -143,10 +146,21 @@ export default function Featured() {
           </div>
 
           <div className={`grid gap-4 ${isBusiness ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4" : "grid-cols-2 lg:grid-cols-4"}`}>
-            {current.subcategories.map((sub, i) => (
-              <SubcategoryCard key={i} sub={sub} isBusiness={isBusiness} />
-            ))}
+            {current.subcategories.map((sub, i) => {
+              const label = typeof sub === "string" ? sub : sub.label;
+              return (
+                <div
+                  key={i}
+                  onClick={() => setActiveSub(activeSub === label ? null : label)}
+                  className={`cursor-pointer transition-all ${activeSub === label ? "ring-2 ring-neutral-900" : ""}`}
+                >
+                  <SubcategoryCard sub={sub} isBusiness={isBusiness} />
+                </div>
+              );
+            })}
           </div>
+
+          {isPets && <PetsManager />}
 
           <div className="mt-8 pt-8 border-t border-neutral-100 flex items-center gap-3">
             <VoiceRecorder />
