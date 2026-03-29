@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import PetsManager from "@/components/PetsManager";
+import BusinessManager from "@/components/BusinessManager";
 
 type SubcategorySimple = string;
 type SubcategoryRich = { label: string; icon: string; desc: string };
@@ -98,6 +99,7 @@ export default function Featured({ refreshKey }: { refreshKey?: number }) {
   const current = categories.find((c) => c.id === active)!;
   const isBusiness = active === "business";
   const isPets = active === "family" && activeSub === "Животные";
+  const isBusinessOpen = active === "business";
 
   return (
     <div id="categories" className="min-h-screen px-6 py-20 bg-white flex flex-col justify-center">
@@ -161,6 +163,7 @@ export default function Featured({ refreshKey }: { refreshKey?: number }) {
           </div>
 
           {isPets && <PetsManager key={refreshKey} />}
+          {isBusinessOpen && <BusinessManager key={refreshKey} />}
 
           <div className="mt-8 pt-8 border-t border-neutral-100 flex items-center gap-3">
             <VoiceRecorder />
