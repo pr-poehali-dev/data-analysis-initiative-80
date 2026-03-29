@@ -28,7 +28,9 @@ def handler(event: dict, context) -> dict:
     elif 'wav' in mime_type:
         ext = 'wav'
 
-    client = Groq(api_key=os.environ['GROQ_API_KEY'])
+    api_key = os.environ.get('GROQ_API_KEY', 'NOT_SET')
+    print(f"[DEBUG] GROQ_API_KEY starts with: {api_key[:10] if api_key != 'NOT_SET' else 'NOT_SET'}")
+    client = Groq(api_key=api_key)
 
     with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as tmp:
         tmp.write(audio_bytes)
