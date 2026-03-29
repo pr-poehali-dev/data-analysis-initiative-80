@@ -92,7 +92,7 @@ function SubcategoryCard({ sub, isBusiness }: { sub: Subcategory; isBusiness: bo
   );
 }
 
-export default function Featured() {
+export default function Featured({ refreshKey }: { refreshKey?: number }) {
   const [active, setActive] = useState("family");
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const current = categories.find((c) => c.id === active)!;
@@ -160,7 +160,7 @@ export default function Featured() {
             })}
           </div>
 
-          {isPets && <PetsManager />}
+          {isPets && <PetsManager key={refreshKey} />}
 
           <div className="mt-8 pt-8 border-t border-neutral-100 flex items-center gap-3">
             <VoiceRecorder />

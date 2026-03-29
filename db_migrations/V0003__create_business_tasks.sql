@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS t_p33712990_data_analysis_initia.business_tasks (
+  id SERIAL PRIMARY KEY,
+  category TEXT NOT NULL,
+  text TEXT NOT NULL,
+  done BOOLEAN NOT NULL DEFAULT FALSE,
+  archived BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
