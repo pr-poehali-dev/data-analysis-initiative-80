@@ -11,7 +11,7 @@ const categories = [
     label: "Семья",
     icon: "Heart",
     color: "bg-rose-500",
-    subcategories: ["Моя семья", "Родственники", "Ушедшие", "Животные"] as Subcategory[],
+    subcategories: ["Моя семья", "Родители", "Родственники", "Ушедшие", "Животные"] as Subcategory[],
     attention: 82,
     tasks: 3,
   },
